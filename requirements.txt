@@ -1,0 +1,7 @@
+tensorflow
+robosuite
+numpy
+scipy
+tqdm
+pyyaml
+tensorboard
