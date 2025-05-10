@@ -1,29 +1,63 @@
-# Waypoint-Based RL with TensorFlow
+# Waypoint-Based Reinforcement Learning for Robot Manipulation
 
-Implementation of "Waypoint-Based Reinforcement Learning for Robot Manipulation Tasks" using TensorFlow.
+This repository implements a waypoint-based reinforcement learning approach, a Soft Actor-Critic (SAC) baseline, as described in the paper "Waypoint-Based Reinforcement Learning for Robot Manipulation Tasks" by Mehta et al. The implementation uses TensorFlow and is designed to work with the robosuite simulation environment.
 
-## Setup
-1. Clone the repository:
-   ```bash
-   git clone <repo_url>
-   cd <repo_name>
-   ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run training:
-   ```bash
-   python main.py --task Lift --train --method ours
-   ```
-4. Run evaluation:
-   ```bash
-   python main.py --task Lift --evaluate --method ours --model_path models/Lift/test
+## Usage
+
+### Training
+
+1. **Configure the task and method**: Edit `cfg/config.yaml` to set the task, method, and parameters. For example, to train the waypoint-based method on the Lift task:
+
+   ```yaml
+   env_name: Lift
+   object: ''
+   num_wp: 2
+   run_name: 'test'
+   n_inits: 5
+   render: False
+   train: True
+   test: False
+   method: 'waypoint'
    ```
 
-## Tasks
-- Lift: Pick up a block.
-- Extend to Stack, Door, etc., in `config.py` and `robosuite_env.py`.
+   For SAC:
 
-## Logs
-- TensorBoard: `tensorboard --logdir runs/`
+   ```yaml
+   method: 'sac'
+   train: True
+   test: False
+   ```
+
+2. **Run the training**:
+
+   ```bash
+   python main.py
+   ```
+
+   This will train the specified method, saving models and training data to `models/{env}/{run_name}/` or `models/{env}/{object}/{run_name}/`.
+
+3. **Monitor training**: Training progress is logged to TensorBoard. View the logs using:
+
+   ```bash
+   tensorboard --logdir runs/
+   ```
+
+   Open the provided URL (usually `http://localhost:6006`) in a browser.
+
+### Evaluation
+
+1. **Configure evaluation**: Update `cfg/config.yaml` to enable evaluation:
+
+   ```yaml
+   train: False
+   test: True
+   method: 'waypoint'  # or 'sac'
+   ```
+
+2. **Run the evaluation**:
+
+   ```bash
+   python main.py
+   ```
+
+   This will evaluate the trained model, saving results to `models/{env}/{run_name}/eval_data.pkl` (waypoint) or `eval_reward.pkl` (SAC).

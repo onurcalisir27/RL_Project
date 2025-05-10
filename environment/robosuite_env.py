@@ -1,24 +1,28 @@
-import robosuite as suite
-from robosuite.controllers.composite.composite_controller_factory import load_composite_controller_config
 import numpy as np
+import robosuite as suite
+from robosuite.controllers import load_controller_config
 from scipy.spatial.transform import Rotation as R
+import gymnasium as gym
 
 class RobosuiteEnv:
-    def __init__(self, config):
-        self.config = config
-        self.env_name = config['task']['name']
-        controller_config = load_composite_controller_config(controller="BASIC", robot=config['task']['env']['robot'])
+    def __init__(self, env_name, robot, object_type, render, use_latch=False):
+        controller_config = load_controller_config(default_controller="OSC_POSE")
         self.env = suite.make(
-            env_name=self.env_name,
-            robots=config['task']['env']['robot'],
+            env_name=env_name,
+            robots=robot,
             controller_configs=controller_config,
-            has_renderer=config['render'],
+            has_renderer=render,
             reward_shaping=True,
             control_freq=10,
             has_offscreen_renderer=False,
             use_camera_obs=False,
-            initialization_noise=None
+            initialization_noise=None,
+            single_object_mode=2,
+            object_type=object_type,
+            use_latch=use_latch,
         )
+        self.env_name = env_name
+        self.object_type = object_type
 
     def reset(self, get_objs=False):
         obs = self.env.reset()
@@ -28,28 +32,31 @@ class RobosuiteEnv:
             elif self.env_name == 'Stack':
                 objs = np.concatenate((obs['cubeA_pos'], obs['cubeB_pos']), axis=-1)
             elif self.env_name == 'NutAssembly':
-                objs = obs['RoundNut_pos']
+                nut = 'RoundNut'
+                objs = obs[nut + '_pos']
             elif self.env_name == 'PickPlace':
-                objs = obs[self.config['object'] + '_pos']
+                objs = obs[self.object_type + '_pos']
             elif self.env_name == 'Door':
                 objs = np.concatenate((obs['door_pos'], obs['handle_pos']), axis=-1)
-            else:
-                objs = np.zeros(3)  # Placeholder
             return obs, objs
         return obs
 
-    def step(self, action):
-        obs, reward, done, info = self.env.step(action)
-        return obs, reward, done, info
-
-    def get_state(self, obs):
+    def get_state(self, obs, objs=None):
         if self.env_name == 'Door':
-            pos = obs['robot0_eef_pos']
-            ang = R.from_quat(obs['robot0_eef_quat']).as_euler('xyz', degrees=False)
-            return np.concatenate([pos, ang])
-        pos = obs['robot0_eef_pos']
-        gripper = np.array([0.])  # Simplified
-        return np.concatenate([pos, gripper])
+            robot_pos = obs['robot0_eef_pos']
+            robot_ang = R.from_quat(obs['robot0_eef_quat']).as_euler('xyz', degrees=False)
+            state = np.concatenate((robot_pos, robot_ang), axis=-1)
+        else:
+            state = obs['robot0_eef_pos']
+        if objs is not None:
+            state = np.concatenate((state, objs))
+        return state
+
+    def get_action_space(self):
+        return gym.spaces.Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float64)
+
+    def step(self, action):
+        return self.env.step(action)
 
     def render(self):
         self.env.render()

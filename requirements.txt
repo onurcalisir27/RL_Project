@@ -1,7 +1,8 @@
 tensorflow
-robosuite
+robosuite==1.4.1
 numpy
 scipy
 tqdm
 pyyaml
 tensorboard
+hydra-core>=1.3.0

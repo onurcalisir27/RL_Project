@@ -1,0 +1,30 @@
+env_name: ${task.name}
+object: ''
+num_wp: 2
+run_name: 'test'
+n_inits: 5
+render: False
+train: False
+test: False
+method: 'sac'  # Options: 'waypoint', 'sac'
+
+sac:
+  alpha: 0.1
+  num_steps: 100
+  num_episodes: 200
+  num_eval: 100
+  start_steps: 5000
+  policy: 'Gaussian'
+  gamma: 0.99
+  tau: 0.005
+  lr: 0.0003
+  batch_size: 256
+  hidden_size: 256
+  updates_per_step: 1
+  target_update_interval: 1
+  replay_size: 1000000
+  cuda: False
+
+defaults:
+  - task: Lift
+  - _self_
