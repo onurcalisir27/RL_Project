@@ -2,6 +2,11 @@
 
 This repository implements a waypoint-based reinforcement learning approach, a Soft Actor-Critic (SAC) baseline, as described in the paper "Waypoint-Based Reinforcement Learning for Robot Manipulation Tasks" by Mehta et al. The implementation uses TensorFlow and is designed to work with the robosuite simulation environment.
 
+
+Here's a demonstration of the robot performing the "pick and place" task:
+
+![Robot Task](./assets/waypoints.gif)
+
 ## Usage
 
 ### Training
